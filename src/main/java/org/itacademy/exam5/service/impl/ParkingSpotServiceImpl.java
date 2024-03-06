@@ -4,12 +4,15 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.itacademy.exam5.dto.ParkingDto;
 import org.itacademy.exam5.dto.ParkingSpotDto;
+import org.itacademy.exam5.dto.UserDto;
 import org.itacademy.exam5.entity.ParkingSpot;
 import org.itacademy.exam5.entity.User;
 import org.itacademy.exam5.enums.ParkingSpotStatus;
 import org.itacademy.exam5.enums.ParkingSpotType;
 import org.itacademy.exam5.repo.ParkingSpotRepo;
+import org.itacademy.exam5.repo.UserRepo;
 import org.itacademy.exam5.service.ParkingSpotService;
+import org.itacademy.exam5.service.UserService;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ParkingSpotServiceImpl implements ParkingSpotService {
     private final ParkingSpotRepo repo;
+    private final UserRepo userRepo;
 
     @Override
     public ParkingSpotDto create(ParkingSpotDto dto) {
@@ -43,6 +47,7 @@ public class ParkingSpotServiceImpl implements ParkingSpotService {
                     .status(spot.getStatus())
                     .type(spot.getType())
                     .build();
+            if (spot.getUser() != null) dto.setUserId(spot.getUser().getId());
             dtoList.add(dto);
         }
         return dtoList;
@@ -67,6 +72,9 @@ public class ParkingSpotServiceImpl implements ParkingSpotService {
         if (dto.getType() != null)
             spot.setType(dto.getType());
         repo.save(spot);
+        dto.setId(spot.getId());
+        dto.setStatus(spot.getStatus());
+
         return dto;
     }
 
@@ -78,10 +86,12 @@ public class ParkingSpotServiceImpl implements ParkingSpotService {
 
     @Override
     public void book(ParkingDto dto) {
+        User user = userRepo.getById(dto.getUserId());
         ParkingSpot spot = repo.getParkingSpotBySpotNumber(dto.getSpotNumber());
-        if (spot != null && spot.getStatus().equals(ParkingSpotStatus.FREE)) {
+        if (spot == null) throw new EntityNotFoundException();
+        if (spot.getStatus().equals(ParkingSpotStatus.FREE)) {
             spot.setStatus(ParkingSpotStatus.OCCUPIED);
-            spot.setUser(new User(dto.getId()));
+            spot.setUser(user);
             repo.save(spot);
         } else {
             throw new IllegalArgumentException("Парковочное место уже занято");

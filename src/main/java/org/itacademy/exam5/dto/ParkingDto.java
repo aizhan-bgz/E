@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ParkingDto {
-    private Long id;
     private String spotNumber;
     private Long userId;
 
