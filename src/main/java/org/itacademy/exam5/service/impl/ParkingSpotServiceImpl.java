@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.itacademy.exam5.dto.ParkingDto;
 import org.itacademy.exam5.dto.ParkingSpotDto;
-import org.itacademy.exam5.dto.UserDto;
 import org.itacademy.exam5.entity.ParkingSpot;
 import org.itacademy.exam5.entity.User;
 import org.itacademy.exam5.enums.ParkingSpotStatus;
@@ -12,7 +11,6 @@ import org.itacademy.exam5.enums.ParkingSpotType;
 import org.itacademy.exam5.repo.ParkingSpotRepo;
 import org.itacademy.exam5.repo.UserRepo;
 import org.itacademy.exam5.service.ParkingSpotService;
-import org.itacademy.exam5.service.UserService;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +84,7 @@ public class ParkingSpotServiceImpl implements ParkingSpotService {
 
     @Override
     public void book(ParkingDto dto) {
-        User user = userRepo.getById(dto.getUserId());
+        User user = userRepo.findById(dto.getUserId()).orElseThrow(()-> new EntityNotFoundException("Не найдено"));
         ParkingSpot spot = repo.getParkingSpotBySpotNumber(dto.getSpotNumber());
         if (spot == null) throw new EntityNotFoundException();
         if (spot.getStatus().equals(ParkingSpotStatus.FREE)) {
